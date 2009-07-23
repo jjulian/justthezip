@@ -15,6 +15,8 @@
     document.getElementById("map_canvas").innerHTML = zip;
   }
   
+  var map;
+  
   function findZip(myLatlng) {
     var geocoder = new google.maps.Geocoder();
     geocoder.geocode( {'latLng': myLatlng}, function(results, status) {
@@ -22,11 +24,15 @@
         if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
           for (var x=0; x < results[0].address_components.length; x++) {
             if (results[0].address_components[x].types[0] === 'postal_code') {
-              show(results[0].address_components[x].short_name);
+              var marker = new google.maps.Marker({
+                position: myLatlng, 
+                map: map, 
+                title: 'you are here - '+results[0].address_components[x].short_name
+              });
               return;
             }
           }
-          show("I'm not sure");
+          alert("I'm not sure");
         } else {
           alert("No results found");
         }
@@ -42,26 +48,21 @@
       center: myLatlng,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
-    var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-    var marker = new google.maps.Marker({
-      position: myLatlng, 
-      map: map, 
-      title: 'you are here'
-    });
+    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
   }
 
   function initialize() {
     if (false) {
       //fake it
       var myLatlng = new google.maps.LatLng(39.27942985, -76.57248514);
-      // showMap(myLatlng);
+      showMap(myLatlng);
       findZip(myLatlng);
     } else {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
           // alert(position.coords.latitude+'   '+position.coords.longitude);
           var myLatlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-          // showMap(myLatlng);
+          showMap(myLatlng);
           findZip(myLatlng);
 
           // keep trying to refine the location
