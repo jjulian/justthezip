@@ -1,46 +1,51 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-  <title>justthezip.com</title>
-<style>
-h3 {
-  font-family: Arial,sans-serif;
-  font-size: 1.6em;
-  font-weight: normal;
-}
-strong {
-  font-size: 3em;
-}
-</style>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<title>justthezip.com</title>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
 <script type="text/javascript">
-  function foundLocation(position) { 
-    var myLatlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-    var myOptions = {
-      zoom: 8,
-      center: myLatlng,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    }
-    var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-  } 
-  function noLocation() { 
-    alert('I could not determine your location.'); 
+
+  function errorHandler(error) {
+    console.log('error getting geolocation ('+error.message+') code: '+error.code);
+    show("Sorry. I can't figure out where you are because an error occurred.");
   }
+
+  function show(msg) {
+    document.getElementById("message").innerHTML = msg;
+  }
+  
   function initialize() {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var myLatlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode( {'latLng': myLatlng}, function(results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+            if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
+              for (var x=0; x < results[0].address_components.length; x++) {
+                if (results[0].address_components[x].types[0] === 'postal_code') {
+                  show(results[0].address_components[x].short_name);
+                  return;
+                }
+              }
+              show("I'm not sure");
+            } else {
+              show("You don't seem to be near *anything*");
+            }
+          } else {
+            show("Sorry. I can't figure out where you are.");
+          }
+        });
+      }, errorHandler);
+    } else {
+      show("Sorry. I can't figure out where you are with this browser!");
     }
   }
-</script>
 
+</script>
 </head>
-<body style="margin:0px; padding:0px;" onload="initialize()">
-  <div id="map_canvas" style="width:100%; height:100%">
-  <h3>Janice, I apologize to you if I don't seem real eager to jump into a forced awkward intimate situation that people like to call dating. I don't like the feeling. You're sitting there, you're wondering do I have food on my face, am I eating, am I talking too much, are they talking enough, am I interested I'm not really interested, should I play like I'm interested but I'm not that interested but I think she might be interested but do I want to be interested but now she's not interested? So all of the sudden I'm getting, I'm starting to get interested... And when am I supposed to kiss her? Do I have to wait for the door cause then it's awkward, it's like well goodnight. Do you do like that ass-out hug? Where you like, you hug each other like this and your ass sticks out cause you're trying not to get too close or do you just go right in and kiss them on the lips or don't kiss them at all? It's very difficult trying to read the situation. And all the while you're just really wondering are we gonna get hopped up enough to make some bad decisions? Perhaps play a little game called 
-  <br/><strong>"just the tip"</strong><br/>
-  Just for a second, just to see how it feels.</h3>
-  </div>
+<body onload="initialize();">
+  <div id="message" style="width:100%; height:100%; font-size:3em; text-align:center;"></div>
 </body>
 </html>
