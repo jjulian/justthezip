@@ -3,7 +3,10 @@
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 <title>justthezip.com</title>
+<script type="text/javascript" src="http://code.google.com/apis/gears/gears_init.js"></script>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+<script type="text/javascript" src="/javascripts/prototype.min.js"></script>
+<script type="text/javascript" src="/javascripts/s2.min.js"></script>
 <script type="text/javascript">
 
   function errorHandler(error) {
@@ -12,18 +15,29 @@
   }
 
   function show(msg) {
-    document.getElementById("message").innerHTML = msg;
+    $("message").innerHTML = msg;
+    $("message").setStyle({
+      position:'absolute',
+      bottom:0
+    });
+    $("message").morph('top:0', {duration: 4, transition: 'bounce'});
   }
   
   function initialize() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
+    var geo = navigator.geolocation;
+    if (!geo && (window.google && google.gears)) {
+      geo = google.gears.factory.create('beta.geolocation');
+    }
+    if (geo) {
+      geo.getCurrentPosition(function(position) {
         var myLatlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        console.log(myLatlng);
         var geocoder = new google.maps.Geocoder();
         geocoder.geocode( {'latLng': myLatlng}, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
             if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
               for (var x=0; x < results[0].address_components.length; x++) {
+                console.log(results[0].address_components[x].types[0]+': '+results[0].address_components[x].short_name);
                 if (results[0].address_components[x].types[0] === 'postal_code') {
                   show(results[0].address_components[x].short_name);
                   return;
@@ -46,14 +60,10 @@
 </script>
 </head>
 <body onload="initialize();">
-  <div id="container" style="width:100%; height:100%;">
-    <div id="message" style="font-size:3em; text-align:center;"></div>
-    <div style="position:absolute; bottom:0;">justthezip.com by <a href="mailto:jonathan.m.julian@gmail.com">Jonathan Julian</a></div>
+  <div id="container" style="width:100%; height:100%; font-family:sans-serif;">
+    <div id="message" style="font-size:3em; text-align:center; width:100%; margin:10px;"></div>
+    <div style="position:absolute; bottom:0;">justthezip.com by <a href="http://jonathanjulian.com/">Jonathan Julian</a></div>
   </div>
-  <p>Janice, I apologize to you if I don't seem real eager to jump into a forced awkward intimate situation that people like to call dating. I don't like the feeling. You're sitting there, you're wondering do I have food on my face, am I eating, am I talking too much, are they talking enough, am I interested I'm not really interested, should I play like I'm interested but I'm not that interested but I think she might be interested but do I want to be interested but now she's not interested? So all of the sudden I'm getting, I'm starting to get interested... And when am I supposed to kiss her? Do I have to wait for the door cause then it's awkward, it's like well goodnight. Do you do like that ass-out hug? Where you like, you hug each other like this and your ass sticks out cause you're trying not to get too close or do you just go right in and kiss them on the lips or don't kiss them at all? It's very difficult trying to read the situation. And all the while you're just really wondering are we gonna get hopped up enough to make some bad decisions? Perhaps play a little game called 
-<br/><strong>"just the tip"</strong><br/>
-Just for a second, just to see how it feels.</p>
-<p><a href="index_with_map.html">map</a></p>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
