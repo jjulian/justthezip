@@ -15,21 +15,27 @@
     if (window.google && google.gears) {
       return google.gears.factory.create('beta.geolocation'); //Android, any gears installation
     } else {
-      show('This browser is not location-aware. <a href="http://gears.google.com/?action=install&message=make your browser location-aware&return=http://justthezip.com/">Install Google Gears</a>');
+      show('This browser is not location-aware. <a href="http://gears.google.com/?action=install&message=make your browser location-aware&return=http://justthezip.com/">Install Google Gears</a>', {longtext: true});
     }
     return undefined;
   }
 
-  function show(msg) {
-    document.getElementById("message").innerHTML = msg;
+  function show(text, options) {
+    var msg = document.getElementById("message");
+    msg.innerHTML = text;
+    if (options && options.longtext) {
+      msg.className = '';
+    } else {
+      msg.className = 'big';
+    }
   }
   
   function handlePosition(position) {
     console.log(position);
-    if (position.gearsAddress) {
+    if (position.gearsAddress && position.gearsAddress.postalCode) {
       //we are using gears and the reverse geocode worked
       show(position.gearsAddress.postalCode);
-    } else if (position.address) {
+    } else if (position.address && position.address.postalCode) {
       //FF impl of address: https://bugzilla.mozilla.org/show_bug.cgi?id=503942
       show(position.address.postalCode);
     } else {
@@ -48,13 +54,15 @@
             if (addy.postal_code) {
               show(addy.postal_code);
             } else {
+              //no postal_code came back. todo: try harder
               show("I'm not sure");
             }
           } else {
             show("You don't seem to be near *anything*");
           }
         } else {
-          show("Sorry. I can't figure out where you are.");
+          console.log('error reverse geocoding, code: '+status);
+          show("Sorry. I can't figure out where you are ("+status+").", {longtext: true});
         }
       });
     }
@@ -65,7 +73,7 @@
     if (geo) {
       geo.getCurrentPosition(handlePosition, function(error) {
         console.log('error getting geolocation ('+error.message+') code: '+error.code);
-        show("Sorry. I can't figure out where you are because an error occurred.");
+        show("Sorry. I can't figure out where you are because an error occurred ("+error.code+").", {longtext: true});
       }, {gearsRequestAddress: true});
     }
   }
@@ -78,10 +86,13 @@
   font-family:sans-serif;
 }
 #message {
-  font-size:4em;
+  font-size:1em;
   text-align:center;
   width:100%;
   margin:10px;
+}
+#message.big {
+  font-size:4em;
 }
 #footer {
   position:absolute;
