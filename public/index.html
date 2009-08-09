@@ -5,8 +5,6 @@
 <title>justthezip.com</title>
 <script type="text/javascript" src="http://code.google.com/apis/gears/gears_init.js"></script>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
-<script type="text/javascript" src="/javascripts/prototype.min.js"></script>
-<script type="text/javascript" src="/javascripts/s2.min.js"></script>
 <script type="text/javascript">
 
   function errorHandler(error) {
@@ -15,12 +13,7 @@
   }
 
   function show(msg) {
-    $("message").innerHTML = msg;
-    $("message").setStyle({
-      position:'absolute',
-      bottom:0
-    });
-    $("message").morph('top:0', {duration: 4, transition: 'bounce'});
+    document.getElementById("message").innerHTML = msg;
   }
   
   function initialize() {
@@ -58,11 +51,28 @@
   }
 
 </script>
+<style>
+#container {
+  width:100%;
+  height:100%;
+  font-family:sans-serif;
+}
+#message {
+  font-size:4em;
+  text-align:center;
+  width:100%;
+  margin:10px;
+}
+#footer {
+  position:absolute;
+  bottom:0;
+}
+</style>
 </head>
 <body onload="initialize();">
-  <div id="container" style="width:100%; height:100%; font-family:sans-serif;">
-    <div id="message" style="font-size:3em; text-align:center; width:100%; margin:10px;"></div>
-    <div style="position:absolute; bottom:0;">justthezip.com by <a href="http://jonathanjulian.com/">Jonathan Julian</a></div>
+  <div id="container">
+    <div id="message"></div>
+    <div id="footer">justthezip.com by <a href="http://jonathanjulian.com/">Jonathan Julian</a></div>
   </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
