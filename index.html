@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<meta name="description" content="Zip code and postal code location lookup from iphone and android and other mobile browsers.">
+<title>Just The Zip</title>
+<script type="text/javascript" src="http://code.google.com/apis/gears/gears_init.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+<script type="text/javascript">
+
+  function getGeo() {
+    if (navigator.geolocation) {
+      return navigator.geolocation; //iPhone Safari, FF3.5
+    }
+    if (window.google && google.gears) {
+      return google.gears.factory.create('beta.geolocation'); //Android, any gears installation
+    } else {
+      show('This browser is not location-aware. <a href="http://gears.google.com/?action=install&message=make your browser location-aware&return=http://justthezip.com/">Install Google Gears</a>', {longtext: true});
+    }
+    return undefined;
+  }
+
+  function show(text, options) {
+    var msg = document.getElementById("message");
+    msg.innerHTML = text;
+    if (options && options.longtext) {
+      msg.className = '';
+    } else {
+      msg.className = 'big';
+    }
+  }
+  
+  function handlePosition(position) {
+    console.log(position);
+    if (position.gearsAddress && position.gearsAddress.postalCode) {
+      //we are using gears and the reverse geocode worked
+      show(position.gearsAddress.postalCode);
+    } else if (position.address && position.address.postalCode) {
+      //FF impl of address: https://bugzilla.mozilla.org/show_bug.cgi?id=503942
+      show(position.address.postalCode);
+    } else {
+      //use google to reverse geocode
+      var myLatlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+      console.log(myLatlng);
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode( {'latLng': myLatlng}, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
+            var addy = {};
+            for (var x=0; x < results[0].address_components.length; x++) {
+              console.log(results[0].address_components[x].types[0]+': '+results[0].address_components[x].short_name);
+              addy[results[0].address_components[x].types[0]] = results[0].address_components[x].short_name;
+            }
+            if (addy.postal_code) {
+              show(addy.postal_code);
+            } else {
+              //no postal_code came back. todo: try harder
+              show("I'm not sure");
+            }
+          } else {
+            show("You don't seem to be near *anything*");
+          }
+        } else {
+          console.log('error reverse geocoding, code: '+status);
+          show("Sorry. I can't figure out where you are ("+status+").", {longtext: true});
+        }
+      });
+    }
+  }
+  
+  function initialize() {
+    var geo = getGeo();
+    if (geo) {
+      geo.getCurrentPosition(handlePosition, function(error) {
+        console.log('error getting geolocation ('+error.message+') code: '+error.code);
+        show("Sorry. I can't figure out where you are because an error occurred ("+error.code+").", {longtext: true});
+      }, {gearsRequestAddress: true});
+    }
+  }
+
+</script>
+<style>
+#container {
+  width:99%;
+  height:99%;
+  font-family:sans-serif;
+}
+#message {
+  font-size:1em;
+  text-align:center;
+  width:100%;
+  margin:10px;
+}
+#message.big {
+  font-size:4em;
+}
+#footer {
+  position:absolute;
+  bottom:0;
+}
+</style>
+</head>
+<body onload="initialize();">
+  <div id="container">
+    <div id="message"><img src="/images/spinner.gif"/></div>
+    <div id="footer">justthezip.com by <a href="http://jonathanjulian.com/">Jonathan Julian</a></div>
+  </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-9952121-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>
